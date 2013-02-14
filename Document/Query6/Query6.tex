@@ -1,0 +1,99 @@
+\documentclass[a4j]{jarticle}
+\usepackage{fancybox}
+\usepackage[dvipdfm]{graphicx}
+
+\title{TPC-HベンチマークQuery6資料}
+\author{1051090 福澤優}
+\date{2011.11}
+
+\begin{document}
+\maketitle
+
+\begin{center}
+クエリ6のSQL文
+\begin{verbatim}
+select sum(l_extendedprice*l_discount) as revenue
+from lineitem
+where	l_shipdate >= date '1994-01-01'
+	and l_shipdate < date '1994-01-01' + interval'1'year
+	and l_discount between 0.06 - 0.01 and 0.06 + 0.01
+	and l_quantity < 24
+;   
+\end{verbatim}
+\end{center}
+
+\begin{center}
+POsgreSQLのクエリプラン（indexなしとありで同様)
+\begin{verbatim}
+                            QUERY PLAN                                                                
+-----------------------------------------------------------------------------
+ Aggregate  (cost=253847.57..253847.58 rows=1 width=16)
+   ->  Seq Scan on lineitem  (cost=0.00..253565.34 rows=112892 width=16)
+         Filter: ((l_shipdate >= '1994-01-01'::date) 
+         AND (l_shipdate < '1995-01-01 00:00:00'::timestamp without time zone) 
+         AND (l_discount >= 0.05) AND (l_discount <= 0.07) 
+         AND (l_quantity < 24::numeric))
+-----------------------------------------------------------------------------
+\end{verbatim}
+\end{center}
+
+
+
+\begin{center}
+\begin{figure}[htbp]
+\begin{center}
+ \includegraphics[width=5.0cm]{./fig/Query6onPos.eps}
+ \end{center}
+ \caption{PosgreSQLでのクエリ実行木}
+ \label{fig:one}
+\end{figure}
+\end{center}
+
+
+\begin{center}
+\begin{figure}[htbp]
+\begin{center}
+ \includegraphics[width=6.0cm]{./fig/Query6onNSM.eps}
+ \end{center}
+ \caption{行指向データに対するクエリ実行木}
+ \label{fig:two}
+\end{figure}
+\end{center}
+
+
+\begin{center}
+\begin{figure}[htbp]
+\begin{center}
+ \includegraphics[width=13.0cm]{./fig/Query6onDSM.eps}
+  \caption{列指向データに対するクエリ実行木}
+ \label{fig:three}
+ \end{center} 
+\end{figure}
+\end{center}
+
+
+\begin{center}
+\begin{table}[htbp]
+\caption{Query6の実行時間}
+\label{tbl:one}
+\begin{center}
+\begin{tabular}{c|c|c|c|c|c|c}
+\hline \hline
+&  \multicolumn{3}{|c|}{Posgre(インデックスなし)} &  \multicolumn{3}{|c}{Posgre(インデックスあり)} \\ \hline
+real & 16.624 & 16.609 & 16.503 & 19.832 & 23.216 & 21.620 \\ \hline
+user & 0.03 & 0.05 & 0.02 & 0.02 & 0.02 & 0.02 \\ \hline
+sys & 0.01 & 0.00 & 0.02 & 0.02 & 0.02 & 0.02 \\ \hline
+\multicolumn{7}{c}{}\\
+\hline \hline
+&  \multicolumn{3}{|c|}{行指向} &  \multicolumn{3}{|c}{列指向} \\ \hline
+real & 16.509 & 16.387 & 16.483 & 6.573 & 6.684 & 6.636 \\ \hline
+user & 13.41 & 13.09 & 13.27 & 4.95 & 4.91 & 5.01 \\ \hline
+sys & 2.56 & 2.53 & 2.64 & 1.46 & 1.44 & 1.43 \\ \hline
+\end{tabular}
+\end{center}
+\end{table} 
+\end{center}
+
+\end{document}
+
+

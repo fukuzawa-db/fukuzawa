@@ -1,0 +1,88 @@
+\documentclass[a4j]{jarticle}
+\usepackage{fancybox}
+\usepackage[dvipdfm]{graphicx}
+
+\title{TPC-Hベンチマーク[Scale Factor20]資料}
+\author{1051090 福澤優}
+\date{2011.11}
+
+\begin{document}
+\maketitle
+
+
+\begin{center}
+\begin{figure}[htbp]
+\begin{center}
+ \includegraphics[width=15.0cm]{./fig/Q5-2.eps}
+ \end{center}
+ \caption{Query5でのクエリ実行木(vacuum analyze後)}
+ \label{fig:one}
+\end{figure}
+\end{center}
+
+
+
+\begin{center}
+\begin{figure}[htbp]
+\begin{center}
+ \includegraphics[width=15.0cm]{./fig/Q8-2.eps}
+ \end{center}
+ \caption{Query8でのクエリ実行木(vacuum analyze後)}
+ \label{fig:two}
+\end{figure}
+\end{center}
+
+
+
+\begin{center}
+\begin{table}[htbp]
+\caption{Q5[Scale Factor20]での実行時間[s]}
+\label{tbl:one}
+\begin{center}
+\begin{tabular}{c|c|c|c}
+\hline \hline
+& real & user & user \\ \hline
+行指向(vacuum前の実行プラン) & 24m2.671 & 23m45.257 & 0m10.537 \\ \hline
+行指向(vacuum後の実行プラン) & 24m3.090 & 23m44.237 & 0m10.245 \\ \hline
+列指向(vacuum前の実行プラン) & 22m32.265 & 22m24.840 & 0m2.072 \\ \hline
+列指向(vacuum後の実行プラン) & 17m38.301 & 17m32.770 & 0m1.696 \\ \hline
+\end{tabular}
+\end{center}
+\end{table} 
+\end{center}
+
+\begin{center}
+\begin{table}[htbp]
+\caption{Q6[Scale Factor20]での実行時間[s]}
+\label{tbl:one}
+\begin{center}
+\begin{tabular}{c|c|c|c}
+\hline \hline
+& real & user & user \\ \hline
+行指向 & 2m56.962 & 2m34.274 & 0m8.373 \\ \hline
+列指向 & 1m56.142 & 1m8.216 & 0m1.756 \\ \hline
+\end{tabular}
+\end{center}
+\end{table} 
+\end{center}
+
+
+\begin{center}
+\begin{table}[htbp]
+\caption{Q8[Scale Factor20]での実行時間[s]}
+\label{tbl:one}
+\begin{center}
+\begin{tabular}{c|c|c|c}
+\hline \hline
+& real & user & user \\ \hline
+行指向(vacuum前の実行プラン) & 35m14.584 & 34m53.363 & 0m10.045 \\ \hline
+行指向(vacuum後の実行プラン) & 8m1.864 & 7m40.373 & 0m10.0.29 \\ \hline
+列指向(vacuum前の実行プラン) & 46m30.359 & 46m18.266 & 0m2.604 \\ \hline
+列指向(vacuum後の実行プラン) & 4m12.023 & 4m7.707 & 0m1.936 \\ \hline
+\end{tabular}
+\end{center}
+\end{table} 
+\end{center}
+\end{document}
+
+

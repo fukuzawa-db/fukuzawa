@@ -1,0 +1,21 @@
+#!/bin/sh
+
+path=/home/singlemp/TPC-H_DATA_S20
+
+if [ $# -eq 1 ]; then
+    path=$1
+fi
+
+if [ ! -d $path ]; then
+    echo "Data directory not found: $path"
+    exit 1;
+fi
+
+./Insert_REGION20 $path
+./Insert_NATION20 $path
+./Insert_SUPPLIER20 $path
+./Insert_PART20 $path
+./Insert_PARTSUPP20 $path
+./Insert_CUSTOMER20 $path
+./Insert_ORDERS20 $path
+./Insert_LINEITEM20 $path

@@ -1,0 +1,24 @@
+#!/usr/bin/expect
+
+spawn ./main /home/fuku/resarch/ex1_Q6/index6-1
+expect "Please enter"
+send "index6-1\n"
+expect "How many"
+send "1\n"
+
+expect "Please enter"
+send "key\n"
+expect "Please enter number"
+send "1\n"
+expect "is primary"
+send "n\n"
+expect "is Compress"
+send "n\n"
+expect "is Sorted"
+send "n\n"
+expect "is Index"
+send "n\n"
+
+
+set timeout -1
+expect eof

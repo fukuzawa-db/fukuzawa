@@ -1,0 +1,78 @@
+#!/usr/bin/expect
+#test  column  0.001%
+
+spawn ./main -t /home/fuku/DataSet/test/5-0.001.tbl
+expect "Please enter"
+send "test\n"
+expect "How many"
+send "5\n"
+
+expect "Please enter"
+send "test5-1\n"
+expect "Please enter number"
+send "1\n"
+expect "is primary"
+send "n\n"
+expect "is Compress"
+send "n\n"
+expect "is Sorted"
+send "n\n"
+expect "is Index"
+send "y\n"
+
+
+expect "Please enter"
+send "test5-2\n"
+expect "Please enter number"
+send "1\n"
+expect "is primary"
+send "n\n"
+expect "is Compress"
+send "n\n"
+expect "is Sorted"
+send "n\n"
+expect "is Index"
+send "y\n"
+
+
+expect "Please enter"
+send "test5-3\n"
+expect "Please enter number"
+send "1\n"
+expect "is primary"
+send "n\n"
+expect "is Compress"
+send "n\n"
+expect "is Sorted"
+send "n\n"
+expect "is Index"
+send "y\n"
+
+
+expect "Please enter"
+send "test5-4\n"
+send "1\n"
+expect "is primary"
+send "n\n"
+expect "is Compress"
+send "n\n"
+expect "is Sorted"
+send "n\n"
+expect "is Index"
+send "y\n"
+
+expect "Please enter"
+send "test5-5\n"
+send "1\n"
+expect "is primary"
+send "n\n"
+expect "is Compress"
+send "n\n"
+expect "is Sorted"
+send "n\n"
+expect "is Index"
+send "y\n"
+
+
+set timeout -1
+expect eof

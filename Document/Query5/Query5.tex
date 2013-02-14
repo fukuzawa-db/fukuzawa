@@ -1,0 +1,200 @@
+\documentclass[a4j]{jarticle}
+\usepackage{fancybox}
+\usepackage[dvipdfm]{graphicx}
+
+\title{TPC-HベンチマークQuery5資料}
+\author{1051090 福澤優}
+\date{2011.11}
+
+\begin{document}
+\maketitle
+
+\begin{center}
+クエリ5のSQL文
+\begin{verbatim}
+select
+	n_name,
+	sum(l_extendedprice*(1-l_discount)) as revenue
+from
+	customer,
+	orders,
+	lineitem,
+	supplier,
+	nation,
+	region
+where
+		c_custkey = o_custkey
+	and	l_orderkey = o_orderkey
+	and	l_suppkey = s_suppkey
+	and c_nationkey = s_nationkey
+	and	s_nationkey = n_nationkey
+	and	n_regionkey = r_regionkey
+	and	r_name = 'ASIA'
+	and	o_orderdate >= date '1994-01-01'
+	and	o_orderdate < date '1994-01-01' + interval'1'year
+group by
+	n_name
+order by
+	revenue desc
+; 
+\end{verbatim}
+\end{center}
+
+\begin{center}
+POsgreSQLのクエリプラン（indexなし)
+\begin{verbatim}
+                 QUERY PLAN(PosgreSQL[indexなし]のクエリプラン)                                                             
+-----------------------------------------------------------------------------
+ Sort  (cost=279560.73..279560.80 rows=25 width=120)
+   Sort Key: (sum((lineitem.l_extendedprice * (1::numeric - lineitem.l_discount))))
+   ->  HashAggregate  (cost=279559.72..279560.15 rows=25 width=120)
+         ->  Hash Join  (cost=61327.18..279552.49 rows=1446 width=120)
+               Hash Cond: ((orders.o_custkey = customer.c_custkey) 
+               AND (supplier.s_nationkey = customer.c_nationkey))
+               ->  Hash Join  (cost=53370.18..268948.26 rows=36158 width=132)
+                     Hash Cond: (lineitem.l_orderkey = orders.o_orderkey)
+                     ->  Hash Join  (cost=373.94..203829.14 rows=240049 width=132)
+                           Hash Cond: (lineitem.l_suppkey = supplier.s_suppkey)
+                           ->  Seq Scan on lineitem  
+                           (cost=0.00..178550.15 rows=6001215 width=24)
+                           ->  Hash  (cost=368.94..368.94 rows=400 width=116)
+                                 ->  Hash Join  (cost=2.44..368.94 
+                                 rows=400 width=116)
+                                       Hash Cond: (supplier.s_nationkey 
+                                       = nation.n_nationkey)
+                                       ->  Seq Scan on supplier  
+                                       (cost=0.00..325.00 rows=10000 width=8)
+                                       ->  Hash  (cost=2.43..2.43 rows=1 width=108)
+                                             ->  Hash Join  (cost=1.07..2.43 rows=1 width=108)
+                                                   Hash Cond: (nation.n_regionkey 
+                                                   = region.r_regionkey)
+                                                   ->  Seq Scan on nation  
+                                                   (cost=0.00..1.25 rows=25 width=112)
+                                                   ->  Hash  (cost=1.06..1.06 rows=1 width=4)
+                                                         ->  Seq Scan on region  
+                                                         (cost=0.00..1.06 rows=1 width=4)
+                                                         Filter: (r_name = 'ASIA'::bpchar)
+                     ->  Hash  (cost=49289.00..49289.00 rows=225939 width=8)
+                           ->  Seq Scan on orders  (cost=0.00..49289.00 rows=225939 width=8)
+                                 Filter: ((o_orderdate >= '1994-01-01'::date) 
+                                 AND (o_orderdate < '1995-01-01 00:00:00'::timestamp
+                                  without time zone))
+               ->  Hash  (cost=5121.00..5121.00 rows=150000 width=8)
+                     ->  Seq Scan on customer  (cost=0.00..5121.00 rows=150000 width=8)
+-----------------------------------------------------------------------------
+\end{verbatim}
+\end{center}
+
+
+\begin{center}
+
+\begin{verbatim}
+                 QUERY PLAN(PosgreSQL[indexあり]のクエリプラン)                                                                                                                        
+-----------------------------------------------------------------------------
+ Sort  (cost=91651.95..91652.01 rows=25 width=120)
+   Sort Key: (sum((lineitem.l_extendedprice * (1::numeric - lineitem.l_discount))))
+   ->  HashAggregate  (cost=91650.93..91651.37 rows=25 width=120)
+         ->  Hash Join  (cost=6295.94..91643.69 rows=1449 width=120)
+               Hash Cond: ((lineitem.l_suppkey = supplier.s_suppkey) 
+               AND (customer.c_nationkey = supplier.s_nationkey))
+               ->  Nested Loop  (cost=5820.94..90062.23 rows=36399 width=132)
+                     ->  Hash Join  (cost=5820.94..56053.88 rows=9098 width=116)
+                           Hash Cond: (orders.o_custkey = customer.c_custkey)
+                           ->  Seq Scan on orders  (cost=0.00..49289.00 rows=227455 width=8)
+                                 Filter: ((o_orderdate >= '1994-01-01'::date) 
+                                 AND (o_orderdate < '1995-01-01 00:00:00'::
+                                 timestamp without time zone))
+                           ->  Hash  (cost=5745.94..5745.94 rows=6000 width=116)
+                                 ->  Hash Join  (cost=2.44..5745.94 rows=6000 width=116)
+                                       Hash Cond: (customer.c_nationkey = nation.n_nationkey)
+                                       ->  Seq Scan on customer  
+                                       (cost=0.00..5121.00 rows=150000 width=8)
+                                       ->  Hash  (cost=2.43..2.43 rows=1 width=108)
+                                             ->  Hash Join  (cost=1.07..2.43 rows=1 width=108)
+                                                   Hash Cond: 
+                                                   (nation.n_regionkey = region.r_regionkey)
+                                                   ->  Seq Scan on nation  
+                                                   (cost=0.00..1.25 rows=25 width=112)
+                                                   ->  Hash  (cost=1.06..1.06 rows=1 width=4)
+                                                         ->  Seq Scan on region  
+                                                         (cost=0.00..1.06 rows=1 width=4)
+                                                               Filter: 
+                                                               (r_name = 'ASIA'::bpchar)
+                     ->  Index Scan using lineitem_pkey on lineitem  
+                     (cost=0.00..3.54 rows=16 width=24)
+                           Index Cond: (lineitem.l_orderkey = orders.o_orderkey)
+               ->  Hash  (cost=325.00..325.00 rows=10000 width=8)
+                     ->  Seq Scan on supplier  (cost=0.00..325.00 rows=10000 width=8)
+-----------------------------------------------------------------------------
+\end{verbatim}
+\end{center}
+
+
+
+\begin{center}
+\begin{figure}[htbp]
+\begin{center}
+ \includegraphics[width=12.0cm]{./fig/Query5onPos.eps}
+ \end{center}
+ \caption{PosgreSQL（indexなし）でのクエリ実行木}
+ \label{fig:one}
+\end{figure}
+\end{center}
+
+\begin{center}
+\begin{figure}[htbp]
+\begin{center}
+ \includegraphics[width=12.0cm]{./fig/Query5onPos_index.eps}
+ \end{center}
+ \caption{PosgreSQL（indexあり）でのクエリ実行木}
+ \label{fig:two}
+\end{figure}
+\end{center}
+
+\begin{center}
+\begin{figure}[htbp]
+\begin{center}
+ \includegraphics[width=15.0cm]{./fig/Query5onNSM.eps}
+ \end{center}
+ \caption{行指向データに対するクエリ実行木}
+ \label{fig:three}
+\end{figure}
+\end{center}
+
+
+\begin{center}
+\begin{figure}[htbp]
+\begin{center}
+ \includegraphics[width=15.0cm]{./fig/Query5onDSM.eps}
+  \caption{列指向データに対するクエリ実行木}
+ \label{fig:four}
+ \end{center} 
+\end{figure}
+\end{center}
+
+
+\begin{center}
+\begin{table}[htbp]
+\caption{Query5の実行時間}
+\label{tbl:one}
+\begin{center}
+\begin{tabular}{c|c|c|c|c|c|c}
+\hline \hline
+&  \multicolumn{3}{|c|}{Posgre(インデックスなし)} &  \multicolumn{3}{|c}{Posgre(インデックスあり)} \\ \hline
+real & 25.482 & 21.003 & 21.425 & 75.110 & 79.364 & 80.610 \\ \hline
+user & 0.02 & 0.02 & 0.02 & 0.05 & 0.03 & 0.04 \\ \hline
+sys & 0.02 & 0.02 & 0.02 & 0.00 & 0.01 & 0.00 \\ \hline
+\multicolumn{7}{c}{}\\
+\hline \hline
+&  \multicolumn{3}{|c|}{行指向} &  \multicolumn{3}{|c}{列指向} \\ \hline
+real & 34.897 & 34.975 & 34.685 & 23.227 & 23.490 & 23.218 \\ \hline
+user & 29.68 & 30.26 & 29.60 & 19.53 & 20.00 & 19.72 \\ \hline
+sys & 3.52 & 3.16 & 3.58 & 2.68 & 2.31 & 2.53 \\ \hline
+\end{tabular}
+\end{center}
+\end{table} 
+\end{center}
+
+\end{document}
+
+
